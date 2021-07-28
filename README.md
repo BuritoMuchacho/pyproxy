@@ -42,7 +42,7 @@ And disconnect:
 ```
 from pyproxy.proxy import Proxy
 
-Proxy().disconnect(type='http')
+Proxy.disconnect(type='http')
 ```
 Basicaly, all functions have the same set of arguments:
 * num: *int*, a number of proxies you want to get (only for `to_csv()`, `dict_proxies()` and `list_proxies()`)

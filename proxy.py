@@ -7,9 +7,7 @@ class Proxy:
     """
     Main proxy class
     """
-    def __init__(self):
-        """Easily get proxy using proxyscan.io API"""
-        self.url = f'https://www.proxyscan.io/api/proxy?'  # API url
+    __url = f'https://www.proxyscan.io/api/proxy?'  # API url
 
 
     def proxy(self, check=True, type=None, country_code=None, level=None) -> dict:
@@ -26,23 +24,25 @@ class Proxy:
         """
 
         if type:
-            self.url += f'type={type}&'  # search by protocol
+            self.__url += f'type={type}&'  # search by protocol
         if country_code:
-            self.url += f'country={country_code.lower()}&'  # search by country code
+            self.__url += f'country={country_code.lower()}&'  # search by country code
         if level:
-            self.url += f'level={level.lower()}&'  # search by anonymity level
+            self.__url += f'level={level.lower()}&'  # search by anonymity level
 
         while True:
-            my_dict = requests.get(self.url).json()[0]  # get a dict out of json  
-
+            try:
+                my_dict = requests.get(self.__url).json()[0]  # get a dict out of json  
+            except:
+                raise Exception('Invalid parameters')
             ctype = my_dict['Type'][0].lower() if len(my_dict['Type']) == 1 else my_dict['Type'][1].lower()  # get proxy protocol
             proxy = {ctype: f"{ctype}://{my_dict['Ip']}:{my_dict['Port']}"}  # dict with proxy
-            if check == False:
+            if not check:
                 return proxy
             else:
                 try:
                     # try to get responce with proxy and return proxy if succeed
-                    requests.get('https://api.myip.com', proxies=proxy, timeout=2)
+                    requests.get('https://api.myip.com', proxies=proxy, timeout=5 if ctype == 'https' else 2)
                     return proxy
                 except:
                     continue
@@ -62,15 +62,15 @@ class Proxy:
             list: list of dictionaries with proxies
         """
         if type:
-            self.url += f'type={type}&'  # search by protocol
+            self.__url += f'type={type}&'  # search by protocol
         if country_code:
-            self.url += f'country={country_code.lower()}&'  # search by country code
+            self.__url += f'country={country_code.lower()}&'  # search by country code
         if level:
-            self.url += f'level={level.lower()}&'  # search by anonymity level
+            self.__url += f'level={level.lower()}&'  # search by anonymity level
 
         proxies = []  # list of proxies
-        for i in range(num):
-            my_dict = requests.get(self.url).json()[0]  # get a dict out of json      
+        for _ in range(num):
+            my_dict = requests.get(self.__url).json()[0]  # get a dict out of json      
             ctype = my_dict['Type'][0].lower() if len(my_dict['Type']) == 1 else my_dict['Type'][1].lower()  # get proxy protocol
             proxy = {ctype: f"{ctype}://{my_dict['Ip']}:{my_dict['Port']}"}  # dict with proxy
             if not check:
@@ -78,7 +78,7 @@ class Proxy:
             else: 
                 try:
                     # try to get responce with proxy
-                    requests.get('https://api.myip.com', proxies=proxy, timeout=2)
+                    requests.get('https://api.myip.com', proxies=proxy, timeout=5 if ctype == 'https' else 2)
                     proxies.append(proxy)  # add proxy to list
                 except:
                     # if previous proxy failed
@@ -101,15 +101,15 @@ class Proxy:
             list: list of strings with proxy addresses
         """
         if type:
-            self.url += f'type={type}&'  # search by protocol
+            self.__url += f'type={type}&'  # search by protocol
         if country_code:
-            self.url += f'country={country_code.lower()}&'  # search by country code
+            self.__url += f'country={country_code.lower()}&'  # search by country code
         if level:
-            self.url += f'level={level.lower()}&'  # search by anonymity level
+            self.__url += f'level={level.lower()}&'  # search by anonymity level
 
         proxies = []  # list of proxies
-        for i in range(num): 
-            my_dict = requests.get(self.url).json()[0]  # get a dict out of json
+        for _ in range(num): 
+            my_dict = requests.get(self.__url).json()[0]  # get a dict out of json
             ctype = my_dict['Type'][0].lower() if len(my_dict['Type']) == 1 else my_dict['Type'][1].lower()  # get proxy protocol    
             proxy = f"{my_dict['Type'][0].lower() if len(my_dict['Type']) == 1 else my_dict['Type'][1].lower()}://{my_dict['Ip']}:{my_dict['Port']}"  # string with proxy address
             if not check:
@@ -117,7 +117,7 @@ class Proxy:
             else: 
                 try:
                     # try to get responce with proxy
-                    requests.get('https://api.myip.com', proxies={ctype: proxy}, timeout=2)  # TODO
+                    requests.get('https://api.myip.com', proxies={ctype: proxy}, timeout=5 if ctype == 'https' else 2)
                     proxies.append(proxy)  # add proxy to list
                 except:  
                     # if previous proxy failed
@@ -149,37 +149,37 @@ class Proxy:
                 func: write proxy to file
             """
             if type:
-                self.url += f'type={type}&'  # search by protocol
+                self.__url += f'type={type}&'  # search by protocol
             if country_code:
-                self.url += f'country={country_code.lower()}&'  # search by country code
+                self.__url += f'country={country_code.lower()}&'  # search by country code
             if level:
-                self.url += f'level={level.lower()}&'  # search by anonymity level
+                self.__url += f'level={level.lower()}&'  # search by anonymity level
 
-            my_dict = requests.get(self.url).json()[0]  # get a dict out of json      
+            my_dict = requests.get(self.__url).json()[0]  # get a dict out of json      
             ctype = my_dict['Type'][0].lower() if len(my_dict['Type']) == 1 else my_dict['Type'][1].lower()  # get proxy protocol
             proxy = {ctype: f"{ctype}://{my_dict['Ip']}:{my_dict['Port']}"}  # dict with proxy
 
             try:
                 # try to get responce with proxy
-                requests.get('https://api.myip.com', proxies=proxy, timeout=2)
-                return writer.writerow([ctype, my_dict['Ip'], my_dict['Port'], my_dict['Anonymity']])  # write proxy to csv
+                requests.get('https://api.myip.com', proxies=proxy, timeout=5 if ctype == 'https' else 2)
+                return writer.writerow([ctype, my_dict['Ip'], my_dict['Port'], my_dict['Location']['country'], my_dict['Anonymity']])  # write proxy to csv
             except:
                 error()  # repeat if previous failed
 
 
         if type:
-            self.url += f'type={type}&'  # search by protocol
+            self.__url += f'type={type}&'  # search by protocol
         if country_code:
-            self.url += f'country={country_code.lower()}&'  # search by country code
+            self.__url += f'country={country_code.lower()}&'  # search by country code
         if level:
-            self.url += f'level={level.lower()}&'  # search by anonymity level
+            self.__url += f'level={level.lower()}&'  # search by anonymity level
 
         with open('proxies.csv', 'w', newline='', encoding='utf-8') as f:  # open/create csv file
             writer = csv.writer(f, delimiter=',')  # initialize writer
             writer.writerow(['Type', 'Address', 'Port', 'Country', 'Anonymity'])  # write first row
 
-            for i in range(num):
-                my_dict = requests.get(self.url).json()[0]  # get a dict out of json      
+            for _ in range(num):
+                my_dict = requests.get(self.__url).json()[0]  # get a dict out of json      
                 ctype = my_dict['Type'][0].lower() if len(my_dict['Type']) == 1 else my_dict['Type'][1].lower()  # get proxy protocol
                 if not check:
                     writer.writerow([ctype, my_dict['Ip'], my_dict['Port'], my_dict['Anonymity']])  # write proxy to file
@@ -187,7 +187,7 @@ class Proxy:
                     proxy = {ctype: f"{ctype}://{my_dict['Ip']}:{my_dict['Port']}"}  # dict with proxy
                     try:
                         # try to get responce with proxy
-                        requests.get('https://api.myip.com', proxies=proxy, timeout=2)
+                        requests.get('https://api.myip.com', proxies=proxy, timeout=5 if ctype == 'https' else 2)
                         writer.writerow([ctype, my_dict['Ip'], my_dict['Port'], my_dict['Location']['country'], my_dict['Anonymity']])  # write proxy to file
                     except:
                         error()  # run error function if previous proxy failed
@@ -218,11 +218,14 @@ class Proxy:
         elif ip.split("://")[0] == 'socks4' or 'socks5':
             subprocess.call(['networksetup -setsocksfirewallproxy "Wi-Fi" '
                 f'"{ip.split("://")[1].split(":")[0]}" "{ip.split("//")[1].split(":")[1]}"'], shell=True)
+        else:
+            raise Exception('Unknown proxy connection type')
 
         return print(f'Successfully connected to {ip}')
 
 
-    def disconnect(self, type=None):
+    @staticmethod
+    def disconnect(type=None):
         """Disconnect your device drom proxy (macOS)
 
         Args:
@@ -233,14 +236,14 @@ class Proxy:
         """
         # execute commands to disconnect from proxies depending on protocol
         if type == 'https':
-            subprocess.call([f'networksetup -setsecurewebproxystate "Wi-Fi" "off"'], shell=True)
+            subprocess.call(['networksetup -setsecurewebproxystate "Wi-Fi" "off"'], shell=True)
         elif type == 'http':
-            subprocess.call([f'networksetup -setwebproxystate "Wi-Fi" "off"'], shell=True)
+            subprocess.call(['networksetup -setwebproxystate "Wi-Fi" "off"'], shell=True)
         elif type == 'socks4' or type == 'socks5':
-            subprocess.call([f'networksetup -setsocksfirewallproxystate "Wi-Fi" "off"'], shell=True)
+            subprocess.call(['networksetup -setsocksfirewallproxystate "Wi-Fi" "off"'], shell=True)
         else:
-            subprocess.call([f'networksetup -setsecurewebproxystate "Wi-Fi" "off"'], shell=True)
-            subprocess.call([f'networksetup -setwebproxystate "Wi-Fi" "off"'], shell=True)
-            subprocess.call([f'networksetup -setsocksfirewallproxystate "Wi-Fi" "off"'], shell=True)
+            subprocess.call(['networksetup -setsecurewebproxystate "Wi-Fi" "off"'], shell=True)
+            subprocess.call(['networksetup -setwebproxystate "Wi-Fi" "off"'], shell=True)
+            subprocess.call(['networksetup -setsocksfirewallproxystate "Wi-Fi" "off"'], shell=True)
 
         return print('Successfully disconnected')
