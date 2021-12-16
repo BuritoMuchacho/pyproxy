@@ -12,7 +12,7 @@ Some basic usage with requests:
 import requests
 from pyproxy.proxy import Proxy
 
-requests.get('https://httpbin.org/ip', proxy=Proxy().proxy(type='https'))
+requests.get('https://httpbin.org/ip', proxies=Proxy().proxy(type='https'))
 ```
 Get 100 working http proxies to csv file:
 ```
